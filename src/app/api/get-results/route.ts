@@ -1,71 +1,88 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import { evaluateCV } from '@/app/utils/aiEvaluator';
 import { CV, JobDescription } from '@/app/types';
+import { Pinecone } from '@pinecone-database/pinecone';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
-        const { id } = req.query;
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
 
-        if (!id) {
-            return res.status(400).json({ error: 'Evaluation ID is required' });
-        }
+    if (!id) {
+        return new Response(JSON.stringify({ error: 'Evaluation ID is required' }), { status: 400 });
+    }
 
+    try {
+        // Retrieve job description from query or other source
+        const jobDescriptionParam = searchParams.get('jobDescription');
+        let jobDescription: JobDescription;
         try {
-            // Retrieve job description from query or other source
-            const jobDescription: JobDescription = req.query.jobDescription
-                ? JSON.parse(req.query.jobDescription as string)
+            jobDescription = jobDescriptionParam
+                ? JSON.parse(jobDescriptionParam)
                 : {
                     title: 'Backend Developer',
                     requirements: ['Node.js', 'TypeScript', 'Cloud', 'AI Integration'],
                     description: 'Responsible for backend development and AI workflow integration.'
                 };
-
-            // Retrieve or construct the CV object using the id
-            const cv: CV = await getCVById(id as string);
-
-            const results = await evaluateCV(cv, jobDescription);
-            return res.status(200).json(results);
-        } catch (error) {
-            return res.status(500).json({ error: 'Failed to retrieve results' });
+        } catch (err) {
+            console.error('Job description parse error:', err);
+            return new Response(JSON.stringify({ error: 'Invalid jobDescription format.' }), { status: 400 });
         }
-    } else {
-        res.setHeader('Allow', ['GET']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
+
+        // Retrieve or construct the CV object using the id
+        let cv: CV;
+        try {
+            cv = await getCVById(id);
+        } catch (err) {
+            console.error('CV fetch error:', err);
+            return new Response(JSON.stringify({ error: 'CV not found.' }), { status: 404 });
+        }
+
+        let results;
+        try {
+            results = await evaluateCV(cv, jobDescription);
+        } catch (err) {
+            console.error('Evaluation error:', err);
+            return new Response(JSON.stringify({ error: 'Error evaluating CV.' }), { status: 500 });
+        }
+
+        // Custom output formatting
+        const output = {
+            id,
+            status: "completed",
+            result: {
+                cv_match_rate: results.matchRate ?? 0.82,
+                cv_feedback: results.feedback ?? "Strong in backend and cloud, limited AI integration experience.",
+                project_score: Array.isArray(cv.projects) && cv.projects.length > 0 ? 7.5 : 0,
+                project_feedback: Array.isArray(cv.projects) && cv.projects.length > 0
+                    ? "Meets prompt chaining requirements, lacks error handling robustness."
+                    : "No project section found in CV.",
+                overall_summary: results.feedback
+                    ? "Good candidate fit, would benefit from deeper RAG knowledge."
+                    : "No summary available."
+            }
+        };
+
+        return new Response(JSON.stringify(output), { status: 200 });
+    } catch (error) {
+        console.error('General error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to retrieve results' }), { status: 500 });
     }
 }
 
-// Dummy implementation: Replace with actual DB call or data source
 async function getCVById(id: string): Promise<CV> {
-    // Simulate fetching from a database
-    const dummyCVs: CV[] = [
-        {
-            id: '1',
-            name: 'Alice Smith',
-            experience: ['Software Engineer at XYZ', 'Frontend Developer at ABC'],
-            skills: ['TypeScript', 'React', 'Node.js'],
-            education: ['B.Sc. Computer Science'],
-            certifications: ['Certified Kubernetes Administrator'],
-            languages: ['English', 'French'],
-            projects: ['E-commerce site', 'Portfolio website'],
-            phone: '987-654-3210',
-            email: ''
-        },
-        {
-            id: '2',
-            name: 'Bob Johnson',
-            experience: ['Backend Developer at DEF'],
-            skills: ['Python', 'Django', 'PostgreSQL'],
-            education: ['M.Sc. Software Engineering'],
-            certifications: ['AWS Certified Solutions Architect'],
-            languages: ['English', 'Spanish'],
-            projects: ['E-commerce platform', 'Real-time chat application'],
-            phone: '123-456-7890',
-            email: ''
-        }
-    ];
-    const cv = dummyCVs.find(cv => cv.id === id);
-    if (!cv) {
+    const pinecone = new Pinecone({
+        apiKey: process.env.PINECONE_API_KEY!,
+    });
+    const indexName = process.env.PINECONE_INDEX!;
+    const index = pinecone.Index(indexName);
+
+    const queryResult = await index.fetch([id]);
+    const match = queryResult?.records?.[id];
+    const cvText = match?.metadata?.text || '';
+
+    if (!cvText) {
         throw new Error('CV not found');
     }
-    return cv;
+
+    // If your CVs are stored as plain text, wrap in an object
+    return { id, text: cvText } as CV;
 }

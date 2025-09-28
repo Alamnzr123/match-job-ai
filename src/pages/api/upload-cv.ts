@@ -5,6 +5,7 @@ import fs from 'fs';
 import pdfParse from 'pdf-parse';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { v4 as uuidv4 } from 'uuid';
+import { execSync } from 'child_process';
 
 export const config = {
   api: {
@@ -18,13 +19,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  // Initialize Pinecone client
   const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY!,
   });
   const indexName = process.env.PINECONE_INDEX!;
 
-  // Ensure uploads directory exists
   const uploadDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -32,7 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const form = formidable({ uploadDir, keepExtensions: true, multiples: false });
 
-  // Wrap formidable parse in a Promise
   const parseForm = () =>
     new Promise<{ fields: formidable.Fields; files: formidable.Files }>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
@@ -50,7 +48,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     let text = '';
-
     if (file.mimetype === 'application/pdf') {
       const dataBuffer = fs.readFileSync(file.filepath);
       const pdfData = await pdfParse(dataBuffer);
@@ -68,30 +65,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Generate a unique ID for this CV
     const vectorId = uuidv4();
 
-    // Convert text to embedding (OpenAI)
+    // Get embedding from local Python script
     let embedding: number[] = [];
     try {
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      input: text,
-      model: 'text-embedding-ada-002',
-    }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    console.error('OpenAI error:', data);
-    return res.status(500).json({ error: data.error?.message || 'Error generating embedding.' });
-  }
-  embedding = data.data[0].embedding;
-} catch (e) {
-  console.error('Fetch error:', e);
-  return res.status(500).json({ error: 'Error generating embedding.' });
-}
+      // Escape quotes for shell
+      const safeText = text.replace(/"/g, '\\"');
+      const result = execSync(`python embed.py "${safeText}"`);
+      embedding = JSON.parse(result.toString());
+      if (!Array.isArray(embedding) || typeof embedding[0] !== 'number') {
+        console.error('Embedding is not a flat array:', embedding);
+        return res.status(500).json({ error: 'Embedding format invalid.' });
+      }
+    } catch (e) {
+      console.error('Embedding error:', e);
+      return res.status(500).json({ error: 'Error generating embedding.' });
+    }
 
     // Upsert to Pinecone
     try {
@@ -104,6 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       ]);
     } catch (e) {
+      console.error('Pinecone error:', e);
       return res.status(500).json({ error: 'Error saving to Pinecone.' });
     }
 

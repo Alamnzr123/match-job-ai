@@ -23,6 +23,7 @@ export interface CV {
     certifications?: string[];
     languages?: string[];
     projects?: string[];
+    text: string; // Full text of the CV
 }
 
 export interface JobDescription {

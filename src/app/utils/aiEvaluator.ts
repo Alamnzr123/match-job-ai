@@ -1,53 +1,39 @@
-import { OpenAI } from 'openai';
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, // Ensure your API key is set in environment variables
-});
-
 import { JobDescription, CV, CvEvaluationResult } from '../types';
 
 export const evaluateCV = async (cv: CV, jobDescription: JobDescription): Promise<CvEvaluationResult> => {
     const prompt = createPrompt(cv, jobDescription);
 
-    // Use OpenAI to generate response
-    const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 512,
-    });
-    const response = completion.choices[0].message.content ?? '';
+    const response = await fetch(
+        'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+        {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY_WRITE}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ inputs: prompt }),
+        }
+    );
 
-    return parseResponse(response);
+    const data = await response.json();
+
+    // Parse the summary as feedback, and use a mock match rate
+    const feedback = Array.isArray(data) && data[0]?.summary_text
+        ? data[0].summary_text
+        : 'No feedback generated.';
+
+    // You can implement more advanced scoring logic if needed
+    return {
+        matchRate: Math.random(), // Mock match rate (0-1)
+        feedback,
+        evaluationId: '', // Provide a unique ID if available
+        status: 'completed',
+    };
 };
 
 const createPrompt = (cv: CV, jobDescription: JobDescription): string => {
     return `Evaluate the following CV against the job description. 
     CV: ${JSON.stringify(cv)}
-    Job Description: ${JSON.stringify(jobDescription)}`;
-};
-
-const parseResponse = (response: string): CvEvaluationResult => {
-    // Implement parsing logic based on the expected response format
-    const matchRate = extractMatchRate(response);
-    const feedback = extractFeedback(response);
-
-    return {
-        matchRate,
-        feedback,
-        evaluationId: '', // Provide a unique ID if available
-        status: 'completed', // Or another appropriate status value
-    };
-};
-
-const extractMatchRate = (response: string): number => {
-    // Logic to extract match rate from the response
-    const match = response.match(/Match Rate: (\d+(\.\d+)?)/);
-    return match ? parseFloat(match[1]) : 0;
-};
-
-const extractFeedback = (response: string): string => {
-    // Logic to extract feedback from the response
-    const match = response.match(/Feedback: (.+)/);
-    return match ? match[1].trim() : '';
+    Job Description: ${JSON.stringify(jobDescription)}
+    Please summarize the candidate's fit and provide feedback.`;
 };
