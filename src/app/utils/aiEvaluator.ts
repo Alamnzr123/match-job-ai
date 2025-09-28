@@ -1,4 +1,4 @@
-import { OpenAI } from 'openai'; // Import OpenAI library
+import { OpenAI } from 'openai';
 
 // Initialize OpenAI client
 const openai = new OpenAI({

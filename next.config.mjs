@@ -12,7 +12,6 @@ const appConfig = {
 };
 
 const nextConfig = {
-  // ...other Next.js config options
   publicRuntimeConfig: appConfig, // If you want to access in client/server
 };
 

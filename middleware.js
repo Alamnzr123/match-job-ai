@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const RATE_LIMIT = 30; // requests
+const RATE_LIMIT = 30;
 const WINDOW_MS = 60 * 1000; // 1 minute
 const ipHits = new Map();
 
@@ -63,7 +63,6 @@ async function validate(request) {
   }
 }
 
-// --- Main middleware ---
 export async function middleware(request) {
   // Rate limiting
   const limitResponse = await limiter(request);
@@ -78,6 +77,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/api/maps/:path*',
+    '/api/:path*',
   ],
 };
