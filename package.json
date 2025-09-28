@@ -1,0 +1,47 @@
+{
+  "name": "match-job-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A Next.js application for evaluating CVs against job vacancies using AI.",
+  "author": {
+    "name": "Rahmad Alamsyah Nazaruddin",
+    "email": "nzr.rahmad@gmail.com"
+  },
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^6.1.2",
+    "@types/express": "^5.0.3",
+    "@types/uuid": "^11.0.0",
+    "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
+    "busboy": "^1.6.0",
+    "express": "^5.1.0",
+    "formidable": "^3.5.4",
+    "multer": "^2.0.2",
+    "next": "15.5.0",
+    "openai": "^5.23.1",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.16.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/busboy": "^1.5.4",
+    "@types/formidable": "^3.4.5",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.5.2",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "19.1.14",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.0",
+    "tailwindcss": "^4"
+  }
+}
