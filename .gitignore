@@ -10,6 +10,17 @@
 !.yarn/releases
 !.yarn/versions
 
+# .env files
+/.env
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
+.env.local.test
+.env.local.production
+.env.local.development
+.env.test.production
+
 # testing
 /coverage
 
