@@ -9,11 +9,17 @@ This project is a Next.js application that allows users to upload CVs, evaluate 
 - Evaluate CVs against job descriptions using custom scoring logic
 - Retrieve evaluation results with match rates, feedback, and project scoring
 - Simulate async evaluation status (processing/completed)
+- Includes UI screenshots in the `public/screenshots` folder
 
 ## Project Structure
 
 ```
 match-job-ai
+├── public
+│   └── screenshots
+│       ├── upload-cv.png
+│       ├── evaluate-cv.png
+│       └── get-results.png
 ├── src
 │   ├── app
 │   │   ├── api
@@ -35,6 +41,12 @@ match-job-ai
 ├── .env
 └── README.md
 ```
+
+## Vector Database
+
+[`public/screenshots`](public/screenshots/Pinecone_ss_1.png)
+
+CV save on Pinecone vector database
 
 ## Installation
 
@@ -60,6 +72,8 @@ match-job-ai
 
 ### 1. Upload CV
 
+[`public/screenshots`](public/screenshots/POST%20Upload%20CV.png)
+
 - **Endpoint:** `POST /api/upload-cv`
 - **Description:** Uploads a CV file, extracts text, stores embedding in Pinecone, and returns a vector ID.
 - **POSTMAN Example:**
@@ -81,6 +95,8 @@ match-job-ai
 ---
 
 ### 2. Evaluate CV
+
+[`public/screenshots`](public/screenshots/POST%20evaluate.png)
 
 - **Endpoint:** `POST /api/evaluate-cv`
 - **Description:** Initiates evaluation of the uploaded CV using the vector ID and job description. Returns evaluation status.
@@ -111,6 +127,8 @@ match-job-ai
 ---
 
 ### 3. Get Results
+
+[`public/screenshots`](public/screenshots/GET%20result.png)
 
 - **Endpoint:** `GET /api/get-results?id=your-vector-id`
 - **Description:** Retrieves the evaluation result for the given evaluation ID.
@@ -159,4 +177,4 @@ Send a GET request to `/api/get-results?id=your-vector-id` to get the evaluation
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under
