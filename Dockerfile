@@ -16,6 +16,12 @@ RUN npm install --production
 # Copy the rest of the application code
 COPY . .
 
+# Create uploads directory for API file uploads
+RUN mkdir -p /app/uploads
+
+# Set uploads directory permissions (if needed)
+RUN chmod 777 /app/uploads
+
 # Install Python dependencies for embedding
 RUN pip3 install --no-cache-dir sentence-transformers torch
 

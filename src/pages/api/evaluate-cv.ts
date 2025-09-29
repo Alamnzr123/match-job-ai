@@ -1,6 +1,7 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { evaluateCV } from '@/app/utils/aiEvaluator';
-import { CV, JobDescription, CvEvaluationRequest, CvEvaluationResponse, CvEvaluationResult } from '@/app/types';
+import { evaluateCV } from '@/utils/aiEvaluator';
+import { CV, JobDescription, CvEvaluationRequest, CvEvaluationResponse, CvEvaluationResult } from '@/types';
 
 declare global {
     // Extend globalThis to include evaluationStore
@@ -10,13 +11,19 @@ declare global {
 // Simulated evaluation store (global, matches get-results)
 const evaluationStore: Record<string, CvEvaluationResponse> = globalThis.evaluationStore || (globalThis.evaluationStore = {});
 
-export async function POST(req: Request) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+
     try {
-        const body: CvEvaluationRequest = await req.json();
+        const body: CvEvaluationRequest = req.body;
         const { vectorId, jobDescription } = body;
 
         if (!vectorId || !jobDescription) {
-            return new Response(JSON.stringify({ error: 'vectorId and jobDescription are required' }), { status: 400 });
+            res.status(400).json({ error: 'vectorId and jobDescription are required' });
+            return;
         }
 
         // Set status to processing
@@ -43,7 +50,8 @@ export async function POST(req: Request) {
                     status: 'completed',
                     result: undefined
                 };
-                return new Response(JSON.stringify({ error: 'CV text not found in Pinecone.' }), { status: 404 });
+                res.status(404).json({ error: 'CV text not found in Pinecone.' });
+                return;
             }
         } catch (err) {
             evaluationStore[vectorId] = {
@@ -51,7 +59,8 @@ export async function POST(req: Request) {
                 status: 'completed',
                 result: undefined
             };
-            return new Response(JSON.stringify({ error: 'Error fetching CV from Pinecone.' }), { status: 500 });
+            res.status(500).json({ error: 'Error fetching CV from Pinecone.' });
+            return;
         }
 
         // Simulate async evaluation (3 seconds)
@@ -93,11 +102,11 @@ export async function POST(req: Request) {
         }, 3000);
 
         // Immediately return processing status
-        return new Response(JSON.stringify({
+        res.status(200).json({
             evaluationId: vectorId,
             status: 'processing'
-        } as CvEvaluationResponse), { status: 200 });
+        } as CvEvaluationResponse);
     } catch (error) {
-        return new Response(JSON.stringify({ error: 'Error evaluating CV' }), { status: 500 });
+        res.status(500).json({ error: 'Error evaluating CV' });
     }
 }

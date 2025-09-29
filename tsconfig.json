@@ -7,12 +7,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": "./src",
     "paths": {
-      "@/*": [
-        "*"
-      ]
+      "@/*": ["*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"],
+      "@workflows/*": ["workflows/*"]
     },
     "lib": [
       "dom",
@@ -34,10 +34,12 @@
   },
   "include": [
     "src/**/*",
-    ".next/types/**/*.ts"
-, "middleware.js"  ],
+    ".next/types/**/*.ts",
+    "middleware.js"
+  ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    ".next/types/validator.ts"
   ]
 }

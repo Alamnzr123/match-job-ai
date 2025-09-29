@@ -21,21 +21,18 @@ match-job-ai
 │       ├── evaluate-cv.png
 │       └── get-results.png
 ├── src
-│   ├── app
+│   ├── pages
 │   │   ├── api
-│   │   │   ├── upload-cv
-│   │   │   │   └── route.ts
-│   │   │   ├── evaluate-cv
-│   │   │   │   └── route.ts
-│   │   │   └── get-results
-│   │   │       └── route.ts
-│   │   ├── types
-│   │   │   └── index.ts
+│   │   │   ├── upload-cv.ts
+│   │   │   ├── evaluate-cv.ts
+│   │   │   └── get-results.ts
+│   │   ├── types.ts
 │   │   ├── utils
 │   │   │   ├── aiEvaluator.ts
 │   │   │   └── fileHandler.ts
 │   │   └── workflows
 │   │       └── llmPrompt.ts
+├── uploads
 ├── package.json
 ├── tsconfig.json
 ├── .env
@@ -67,6 +64,15 @@ CV save on Pinecone vector database
    ```
    npm run dev
    ```
+
+## Docker Usage
+
+To build and run the project with Docker:
+
+```sh
+docker build -t match-job-ai .
+docker run -p 3000:3000 match-job-ai
+```
 
 ## API Endpoints & POSTMAN Usage
 
@@ -177,4 +183,5 @@ Send a GET request to `/api/get-results?id=your-vector-id` to get the evaluation
 
 ## License
 
-This project is licensed under
+This project is licensed under the MIT License.
+See the [LICENSE](LICENSE) file for details.
