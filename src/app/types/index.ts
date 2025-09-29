@@ -3,13 +3,24 @@ export interface CvUploadRequest {
 }
 
 export interface LLMResponse {
-    matchRate: string;
+    matchRate: string; // e.g., "85.5"
     feedback: string;
 }
 
-export interface CvEvaluationRequest {
+export interface CvUploadResponse {
     cvId: string;
-    jobDescription: string;
+    message: string;
+}
+
+export interface CvEvaluationRequest {
+    vectorId: string; // Changed from cvId to vectorId for Pinecone workflow
+    jobDescription: JobDescription;
+}
+
+export interface CvEvaluationResponse {
+    evaluationId: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    result?: CvEvaluationResult;
 }
 
 export interface CV {
@@ -23,33 +34,29 @@ export interface CV {
     certifications?: string[];
     languages?: string[];
     projects?: string[];
+    achievements?: string[];
+    cultureFit?: string;
     text: string; // Full text of the CV
+    yearsOfExperience?: number;
 }
 
 export interface JobDescription {
     title: string;
-    company: string;
-    location: string;
-    responsibilities: string[];
+    company?: string;
+    location?: string;
+    responsibilities?: string[];
     requirements: string[];
     preferredQualifications?: string[];
     benefits?: string[];
+    description?: string;
 }
 
 export interface CvEvaluationResult {
     evaluationId: string;
     matchRate: number;
-    feedback: string;
-    score?: number;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
-}
-
-export interface CvUploadResponse {
-    cvId: string;
-    message: string;
-}
-
-export interface CvEvaluationResponse {
-    evaluationId: string;
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
+    cv_feedback: string;
+    project_score?: number;
+    project_feedback?: string;
+    overall_summary?: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
 }

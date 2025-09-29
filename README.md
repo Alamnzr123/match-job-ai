@@ -1,32 +1,38 @@
 # Next.js CV Evaluator
 
-This project is a Next.js application that allows users to upload CVs, evaluate them against job vacancy descriptions, and retrieve match rates and scoring using an AI workflow with LLM prompts.
+This project is a Next.js application that allows users to upload CVs, evaluate them against job vacancy descriptions, and retrieve match rates and scoring using a rule-based AI workflow. It uses Pinecone for vector storage and supports async evaluation simulation.
 
 ## Features
 
-- Upload CVs in various formats (PDF, DOCX, plain text).
-- Evaluate CVs against job descriptions using AI.
-- Retrieve evaluation results with match rates and scoring.
+- Upload CVs in various formats (PDF, DOCX, plain text)
+- Store CVs as vector embeddings in Pinecone
+- Evaluate CVs against job descriptions using custom scoring logic
+- Retrieve evaluation results with match rates, feedback, and project scoring
+- Simulate async evaluation status (processing/completed)
 
 ## Project Structure
 
 ```
-nextjs-cv-evaluator
+match-job-ai
 ├── src
-│   ├── pages
-│   │   └── api
-│   │       ├── upload-cv.ts
-│   │       ├── evaluate-cv.ts
-│   │       └── get-results.ts
-│   ├── utils
-│   │   ├── aiEvaluator.ts
-│   │   └── fileHandler.ts
-│   ├── types
-│   │   └── index.ts
-│   └── workflows
-│       └── llmPrompt.ts
+│   ├── app
+│   │   ├── api
+│   │   │   ├── upload-cv
+│   │   │   │   └── route.ts
+│   │   │   ├── evaluate-cv
+│   │   │   │   └── route.ts
+│   │   │   └── get-results
+│   │   │       └── route.ts
+│   │   ├── types
+│   │   │   └── index.ts
+│   │   ├── utils
+│   │   │   ├── aiEvaluator.ts
+│   │   │   └── fileHandler.ts
+│   │   └── workflows
+│   │       └── llmPrompt.ts
 ├── package.json
 ├── tsconfig.json
+├── .env
 └── README.md
 ```
 
@@ -36,7 +42,7 @@ nextjs-cv-evaluator
 
    ```
    git clone <repository-url>
-   cd nextjs-cv-evaluator
+   cd match-job-ai
    ```
 
 2. Install dependencies:
@@ -50,39 +56,106 @@ nextjs-cv-evaluator
    npm run dev
    ```
 
-## API Endpoints
+## API Endpoints & POSTMAN Usage
 
-### Upload CV
+### 1. Upload CV
 
-- **Endpoint:** `/api/upload-cv`
-- **Method:** POST
-- **Description:** Uploads a CV file for evaluation.
+- **Endpoint:** `POST /api/upload-cv`
+- **Description:** Uploads a CV file, extracts text, stores embedding in Pinecone, and returns a vector ID.
+- **POSTMAN Example:**
 
-### Evaluate CV
+  - Method: POST
+  - URL: `http://localhost:3000/api/upload-cv`
+  - Body: form-data
+    - Key: `cv` (type: File)
+    - Value: Select your CV file
 
-- **Endpoint:** `/api/evaluate-cv`
-- **Method:** POST
-- **Description:** Initiates the evaluation of the uploaded CV and returns an evaluation ID and status.
+- **Response:**
+  ```json
+  {
+    "message": "CV uploaded and indexed.",
+    "vectorId": "your-vector-id"
+  }
+  ```
 
-### Get Results
+---
 
-- **Endpoint:** `/api/get-results`
-- **Method:** GET
-- **Description:** Retrieves the evaluation results based on the provided evaluation ID.
+### 2. Evaluate CV
+
+- **Endpoint:** `POST /api/evaluate-cv`
+- **Description:** Initiates evaluation of the uploaded CV using the vector ID and job description. Returns evaluation status.
+- **POSTMAN Example:**
+
+  - Method: POST
+  - URL: `http://localhost:3000/api/evaluate-cv`
+  - Body: raw, JSON
+    ```json
+    {
+      "vectorId": "your-vector-id",
+      "jobDescription": {
+        "title": "Backend Developer",
+        "requirements": ["Node.js", "TypeScript", "Cloud", "AI Integration"],
+        "description": "Responsible for backend development and AI workflow integration."
+      }
+    }
+    ```
+
+- **Response (initial):**
+  ```json
+  {
+    "evaluationId": "your-vector-id",
+    "status": "processing"
+  }
+  ```
+
+---
+
+### 3. Get Results
+
+- **Endpoint:** `GET /api/get-results?id=your-vector-id`
+- **Description:** Retrieves the evaluation result for the given evaluation ID.
+- **POSTMAN Example:**
+
+  - Method: GET
+  - URL: `http://localhost:3000/api/get-results?id=your-vector-id`
+
+- **Response (processing):**
+  ```json
+  {
+    "evaluationId": "your-vector-id",
+    "status": "processing"
+  }
+  ```
+- **Response (completed):**
+  ```json
+  {
+    "evaluationId": "your-vector-id",
+    "status": "completed",
+    "result": {
+      "evaluationId": "your-vector-id",
+      "matchRate": 0.82,
+      "cv_feedback": "Strong in backend and cloud, limited AI integration experience.",
+      "project_score": 7.5,
+      "project_feedback": "Meets prompt chaining requirements, lacks error handling robustness.",
+      "overall_summary": "Good candidate fit, would benefit from deeper RAG knowledge.",
+      "status": "completed"
+    }
+  }
+  ```
 
 ## Usage Examples
 
 ### Uploading a CV
 
-Use a tool like Postman or curl to send a POST request to `/api/upload-cv` with the CV file.
+Use Postman to send a POST request to `/api/upload-cv` with your CV file as form-data.
 
 ### Evaluating a CV
 
-After uploading, send a POST request to `/api/evaluate-cv` with the evaluation ID received from the upload response.
+Copy the `vectorId` from the upload response and send a POST request to `/api/evaluate-cv` with the job description.
 
 ### Retrieving Results
 
-Send a GET request to `/api/get-results` with the evaluation ID to get the evaluation results.
+Send a GET request to `/api/get-results?id=your-vector-id` to get the evaluation results.
 
 ## License
 
