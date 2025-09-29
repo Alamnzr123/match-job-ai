@@ -44,7 +44,7 @@ match-job-ai
 
 ## Vector Database
 
-[`public/screenshots`](public/screenshots/Pinecone_ss_1.png)
+![Pinecone](public/screenshots/Pinecone_ss_1.png)
 
 CV save on Pinecone vector database
 
@@ -72,7 +72,7 @@ CV save on Pinecone vector database
 
 ### 1. Upload CV
 
-[`public/screenshots`](public/screenshots/POST%20Upload%20CV.png)
+![Upload CV](public/screenshots/POST%20Upload%20CV.png)
 
 - **Endpoint:** `POST /api/upload-cv`
 - **Description:** Uploads a CV file, extracts text, stores embedding in Pinecone, and returns a vector ID.
@@ -96,7 +96,7 @@ CV save on Pinecone vector database
 
 ### 2. Evaluate CV
 
-[`public/screenshots`](public/screenshots/POST%20evaluate.png)
+![Evaluate CV](public/screenshots/POST%20evaluate.png)
 
 - **Endpoint:** `POST /api/evaluate-cv`
 - **Description:** Initiates evaluation of the uploaded CV using the vector ID and job description. Returns evaluation status.
@@ -128,7 +128,7 @@ CV save on Pinecone vector database
 
 ### 3. Get Results
 
-[`public/screenshots`](public/screenshots/GET%20result.png)
+![Get Results](public/screenshots/GET%20result.png)
 
 - **Endpoint:** `GET /api/get-results?id=your-vector-id`
 - **Description:** Retrieves the evaluation result for the given evaluation ID.
