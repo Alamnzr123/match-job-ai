@@ -2,9 +2,9 @@
 FROM node:20-bullseye
 
 # Install Python and pip
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && \
+#     apt-get install -y python3 python3-pip && \
+#     rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN mkdir -p /app/uploads
 RUN chmod 777 /app/uploads
 
 # Install Python dependencies for embedding
-RUN pip3 install --no-cache-dir sentence-transformers torch
+# RUN pip3 install --no-cache-dir sentence-transformers torch
 
 # Build Next.js app
 RUN npm run build

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
+    "test": "jest",
     "start": "next start",
     "lint": "eslint"
   },
@@ -24,6 +25,7 @@
     "formidable": "^3.5.4",
     "multer": "^2.0.2",
     "next": "15.5.0",
+    "node-mocks-http": "^1.17.2",
     "openai": "^5.23.1",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.149",
@@ -37,6 +39,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/busboy": "^1.5.4",
     "@types/formidable": "^3.4.5",
+    "@types/jest": "^30.0.0",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.5.2",
     "@types/pdf-parse": "^1.1.5",
@@ -44,6 +47,24 @@
     "@types/react": "19.1.14",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "ts-jest": "^29.4.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.(ts|tsx|js)"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }

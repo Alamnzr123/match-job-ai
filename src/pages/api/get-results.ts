@@ -7,7 +7,7 @@ declare global {
 }
 
 // Simulated evaluation store (must match the one in evaluate-cv)
-const evaluationStore: Record<string, CvEvaluationResponse> = globalThis.evaluationStore || (globalThis.evaluationStore = {});
+const evaluationStore = globalThis.evaluationStore || {};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
